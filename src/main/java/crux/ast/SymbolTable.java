@@ -5,6 +5,7 @@ import crux.ast.types.*;
 
 
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,27 @@ public final class SymbolTable {
   SymbolTable(PrintStream err) {
     this.err = err;
     //TODO
+    Map<String,Symbol> currScope = new HashMap<String, Symbol>();
+
+    FuncType readIntF = new FuncType(TypeList.of(), new IntType());
+    currScope.put("readInt", new Symbol("readInt", readIntF));
+
+    FuncType readCharF = new FuncType(TypeList.of(), new IntType());
+    currScope.put("readChar", new Symbol("readChar", readCharF));
+
+    FuncType printBoolF = new FuncType(TypeList.of(new BoolType()), new VoidType());
+    currScope.put("printBool", new Symbol("printBool", printBoolF));
+
+    FuncType printIntF = new FuncType(TypeList.of(new IntType()), new VoidType());
+    currScope.put("printInt", new Symbol("printInt", printIntF));
+
+    FuncType printCharF = new FuncType(TypeList.of(new IntType()), new VoidType());
+    currScope.put("printChar", new Symbol("printChar", printCharF));
+
+    FuncType printlnF = new FuncType(TypeList.of(), new VoidType());
+    currScope.put("println", new Symbol("println", printlnF));
+
+    symbolScopes.add(currScope);
   }
 
   boolean hasEncounteredError() {
@@ -97,6 +119,7 @@ public final class SymbolTable {
 
   void enter() {
     //TODO
+    symbolScopes.add(new HashMap<String, Symbol>());
   }
 
   /**
@@ -104,7 +127,7 @@ public final class SymbolTable {
    */
 
   void exit() {
-    //TODO
+    symbolScopes.remove(symbolScopes.size()-1);
   }
 
   /**
@@ -113,7 +136,15 @@ public final class SymbolTable {
    */
   Symbol add(Position pos, String name, Type type) {
     //TODO
-    return null;
+    //for (Map.Entry<String,Symbol> entry : symbolScopes.get(symbolScopes.size()-1).entrySet())
+    if (symbolScopes.get(symbolScopes.size()-1).containsKey(name)) {
+      err.printf("DeclareSymbolError%s[Could not declare %s.]%n", pos, name);
+      encounteredError = true;
+      return new Symbol (name, "DeclareSymbolError");
+    }
+    Symbol symbol = new Symbol(name,type);
+    symbolScopes.get(symbolScopes.size()-1).put(name, symbol);
+    return symbol;
   }
 
   /**
@@ -136,6 +167,10 @@ public final class SymbolTable {
    */
   private Symbol find(String name) {
     //TODO
+    for (int i = symbolScopes.size()-1; i > -1; i--){
+      if (symbolScopes.get(i).containsKey(name))
+        return symbolScopes.get(i).get(name);
+    }
     return null;
   }
 }
