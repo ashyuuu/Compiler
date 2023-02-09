@@ -6,6 +6,12 @@ package crux.ast.types;
 public final class VoidType extends Type implements java.io.Serializable {
   static final long serialVersionUID = 12022L;
 
+  // override equivalent
+  @Override
+  public boolean equivalent(Type that){
+    return (that.getClass()== VoidType.class);
+  }
+
   @Override
   public String toString() {
     return "void";

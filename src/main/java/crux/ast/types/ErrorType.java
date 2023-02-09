@@ -17,6 +17,13 @@ public final class ErrorType extends Type implements java.io.Serializable {
   }
 
   @Override
+  public boolean equivalent(Type that){
+    if (that.getClass()!= ErrorType.class)
+      return false;
+    return true;
+  }
+
+  @Override
   public String toString() {
     return String.format("ErrorType(%s)", message);
   }

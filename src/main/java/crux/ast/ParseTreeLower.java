@@ -37,6 +37,8 @@ public final class ParseTreeLower {
     return new Position(start.getLine());
   }
 
+
+
   /**
    *
    * @return True if any errors
@@ -115,9 +117,9 @@ public final class ParseTreeLower {
         IntType intType = new IntType();
         BoolType boolType = new BoolType();
 
-        if (ctx.type().getText().equals("int")){
+        if (ctx.type().Identifier().getText().equals("int")){
             t = intType;
-        } else if (ctx.type().getText().equals("bool")){
+        } else if (ctx.type().Identifier().getText().equals("bool")){
             t = boolType;
         }
 
@@ -166,17 +168,28 @@ public final class ParseTreeLower {
      public Declaration visitFunctionDefinition(CruxParser.FunctionDefinitionContext ctx) {
          Position pos = makePosition(ctx);
          Symbol s = null;
-         if (ctx.type().getText().equals("int")){
-             s = symTab.add(makePosition(ctx),ctx.Identifier().getText(), new IntType());
-         } else if (ctx.type().getText().equals("bool")) {
-             s = symTab.add(makePosition(ctx),ctx.Identifier().getText(), new BoolType());
-         } else if (ctx.type().getText().equals("void")) {
-             s = symTab.add(makePosition(ctx),ctx.Identifier().getText(), new VoidType());
+         TypeList tl = new TypeList();
+         for(CruxParser.ParameterContext param : ctx.parameterList().parameter()) {
+             if (param.type().Identifier().getText().equals("bool")){
+                 tl.append(new BoolType());
+             } else if (param.type().Identifier().getText().equals("int")){
+                 tl.append(new IntType());
+             }
          }
+         Type ret = null;
+         if (ctx.type().getText().equals("bool")){
+             ret = new BoolType();
+         } else if (ctx.type().getText().equals("int")){
+             ret = new IntType();
+         } else if (ctx.type().getText().equals("void")){
+             ret = new VoidType();
+         }
+         s = symTab.add(makePosition(ctx),ctx.Identifier().getText(), new FuncType(tl, ret));
+
          symTab.enter();
          List<Symbol> params = new ArrayList<Symbol>();
          for (int i = 0; i < ctx.parameterList().parameter().size(); i++) {
-             switch (ctx.parameterList().parameter(i).type().getText()) {
+             switch (ctx.parameterList().parameter(i).type().Identifier().getText()) {
                  case "bool":
                      params.add(symTab.add(makePosition(ctx), ctx.parameterList().parameter(i).Identifier().getText(), new BoolType()));
                      break;
@@ -455,17 +468,21 @@ public final class ParseTreeLower {
      */
      @Override
      public Call visitCallExpression(CruxParser.CallExpressionContext ctx) {
-         Symbol s = symTab.lookup(makePosition(ctx),ctx.Identifier().getText());
-         if (!hasEncounteredError()){
-             List<Expression> list = new ArrayList<Expression>();
-             if (ctx.expressionList()==null)
-                 return new Call(makePosition(ctx),s,null);
-             for (CruxParser.Expression0Context e : ctx.expressionList().expression0()){
-                 list.add(visit(e));
-             }
-             return new Call(makePosition(ctx),s,list);
+         Symbol s = symTab.lookup(makePosition(ctx),ctx.Identifier().getSymbol().getText());
+//         if (!hasEncounteredError()){
+//             List<Expression> list = new ArrayList<Expression>();
+//             if (ctx.expressionList()==null)
+//                 return new Call(makePosition(ctx),s,null);
+//             for (CruxParser.Expression0Context e : ctx.expressionList().expression0()){
+//                 list.add(visit(e));
+//             }
+//             return new Call(makePosition(ctx),s,list);
+//         }
+         List<Expression> expr = new ArrayList<>();
+         for (CruxParser.Expression0Context exp : ctx.expressionList().expression0()){
+             expr.add(expressionVisitor.visitExpression0(exp));
          }
-         return new Call(makePosition(ctx),null,null);
+         return new Call(makePosition(ctx),s,expr);
      }
 
     /**
@@ -474,7 +491,7 @@ public final class ParseTreeLower {
      */
     @Override
     public Expression visitDesignator(CruxParser.DesignatorContext ctx) {
-        Symbol s = symTab.lookup(makePosition(ctx),ctx.Identifier().getText());
+        Symbol s = symTab.lookup(makePosition(ctx),ctx.Identifier().getSymbol().getText());
         if (hasEncounteredError()) {
             return null;
         }
@@ -507,7 +524,7 @@ public final class ParseTreeLower {
     @Override
     public Expression visitLiteral(CruxParser.LiteralContext ctx) {
         if (ctx.Integer()!=null)
-            return new LiteralInt(makePosition(ctx),Long.parseLong(ctx.Integer().getText()));
+            return new LiteralInt(makePosition(ctx),Long.parseLong(ctx.getText()));
         else if (ctx.True()!=null)
             return new LiteralBool(makePosition(ctx),true);
         else if (ctx.False()!=null)
