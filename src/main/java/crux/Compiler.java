@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 
 /**
  * This Class is the Entry point for the project, it contains the main function.
- * 
+ *
  */
 public final class Compiler {
   private static Driver driver = new Driver();
@@ -101,7 +101,7 @@ public final class Compiler {
             throw new RuntimeException(String.format("unrecognized command line option '%s'", arg));
           if (driver.hasInputFile())
             throw new RuntimeException(
-                String.format("multiple input files: '%s' and '%s'", driver.getInputFile(), arg));
+                    String.format("multiple input files: '%s' and '%s'", driver.getInputFile(), arg));
           driver.setInputFile(arg);
           break;
       }
@@ -122,11 +122,11 @@ public final class Compiler {
     System.out.println("--authors\t\t\tDisplay the list of authors.");
     System.out.println("--check-types\t\t\tPerform a type check for the input program.");
     System.out
-        .println("--include-types\t\t\tInclude type information in printed ast (see --print-ast).");
+            .println("--include-types\t\t\tInclude type information in printed ast (see --print-ast).");
     System.out.println("--print-pt\t\t\tPrint the parse tree to stdout.");
     System.out.println("--print-ast\t\t\tPrint the abstract syntax tree to stdout.");
     System.out.println(
-        "--serialize\t\t\tDump serialized versions of compiler represenatations out to files.");
+            "--serialize\t\t\tDump serialized versions of compiler represenatations out to files.");
     System.out.println("--print-ir\t\t\tDump dot compatible representation of IR.");
     System.out.println("--emulator\t\t\tRun Emulator on IR.");
     System.out.println("--debug-emulator\t\tRun Emulator on IR with debugging turned on.");

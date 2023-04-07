@@ -2,6 +2,7 @@ package crux.backend;
 
 import java.util.*;
 import java.io.*;
+import crux.printing.IRValueFormatter;
 
 public class CodePrinter {
   PrintStream out;
